@@ -68,7 +68,7 @@ require "controllers\beesController.php";
 <form method="POST">
   <button name="resetBees" value="1">Reset all Bees</button>
   <button name="damage" value="all">Damage all Bees</button>
-  <div class="bees" style="">
+  <div class="bees">
   <?php
   foreach($bees as $bee)
   {?>
