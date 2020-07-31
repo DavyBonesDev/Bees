@@ -2,7 +2,7 @@
 
 namespace bees;
 
-require "/laragon/www/Bees/classes/dbh.class.php";
+require "classes/dbh.class.php";
 
 // interface iBees {
 //     public function damage(int $damage);
@@ -12,18 +12,47 @@ require "/laragon/www/Bees/classes/dbh.class.php";
 class Bees extends \Dbh
 {
 
-    public $health = 100;
+    public $health;
     public $status;
     public $role;
     static $totalBees = 0;
+    static $resetBees = false;
     public $beeId;
 
     function __construct(string $role)
     {
         self::$totalBees++;
-        $this->role = ucFirst($role);
-        $this->status = "Alive";
-        $this->setBee();
+        $this->role = ucFirst($role);        
+                
+        self::$resetBees ? $this->resetBee() : $this->getBee();       
+        $this->setStatus();
+    }
+
+    private function setStatus()
+    {
+
+        switch($this->role)
+        {
+            case "Queen":
+                if($this->health < 20) {
+                    $this->status = "Dead";
+                    return;
+                }
+            break;
+            case "Drone":
+                if($this->health < 50) {
+                    $this->status = "Dead";
+                    return;
+                }
+            break;
+            case "Worker":
+                if($this->health < 70) {
+                    $this->status = "Dead";
+                    return;
+                }
+            break;
+        }        
+        $this->status = "Alive";        
     }
 
     public function unitTest()
@@ -31,34 +60,66 @@ class Bees extends \Dbh
         return "Hello World";
     }
 
-    private function setBee()
+    private function getBee()
     {
         $this->beeId = self::$totalBees;
 
-        $beeCheckSql = "SELECT * FROM bees WHERE id='$this->beeId'";
-        if ($this->connect()->query($beeCheckSql)->fetch()) {
-            //update statement
-            $this->updateBee();
+        $conn = $this->connect();
+        
+        $dbh = $conn->query("SELECT * FROM bees WHERE BeeID=$this->beeId");
+
+        if($beeData = $dbh->fetch())
+        {            
+            $this->role = $beeData["BeeRole"];
+            $this->health = intval($beeData["BeeHealth"]);
+            $this->status = $beeData["BeeStatus"];            
+            return true;
+        }
+        return false;
+    }
+
+    private function resetBee()
+    {                
+        if($this->getBee()) {            
+            $this->health = 100;
+            $this->connect()->query("UPDATE bees SET BeeRole='$this->role', BeeHealth=$this->health, BeeStatus='$this->status' WHERE BeeID='$this->beeId'");
             return;
         }
-        //insert statement
-        $this->connect()->query("INSERT INTO bees SET Role='$this->role', Health='$this->health', `Status`='$this->status'");
+        $this->connect()->query("INSERT INTO bee SET BeeRole='$this->role', BeeHealth=100, BeeStatus='$this->status'");
     }
 
     private function updateBee()
     {
-        $this->connect()->query("UPDATE bees SET Role='$this->role', Health='$this->health', `Status`='$this->status' WHERE ID='$this->beeId'");
+        $this->connect()->query("UPDATE bees SET BeeRole='$this->role', BeeHealth='$this->health', BeeStatus='$this->status' WHERE BeeID='$this->beeId'");
     }
 
-    public function damage(int $damage = 0)
+    public function damage()
     {
-        if ($damage < 0 || $damage > 100) {
-            throw new \Exception("Damage must be between 0 and 100");
+        // if ($damage < 1 || $damage > 80) {
+        //     throw new \Exception("Damage must be between 1 and 80");
+        // }
+        if($this->status == "Dead") {
+            return;
         }
+
+        $damage = rand(1, 80);
+        $this->health = $this->health - $damage;        
+        if($this->health < 0) {
+            $this->health = 0;
+        }
+        $this->connect()->query("UPDATE bees SET BeeHealth='$this->health' WHERE BeeID='$this->beeId'");
+        $this->setStatus();
     }
 
     static public function createBees(int $queens, int $drones, int $workers)
     {
+        if ( ($queens < 0 || $queens > 30)
+            || ( $drones < 0 || $drones > 30)
+            || ( $workers < 0 || $workers > 30)
+        ) {
+            throw new \Exception("createBees parameters must be between an integer 0 and 30");
+        }
+
         $total = $queens + $drones + $workers;
         for ($i = 1; $i < $total + 1; $i++) {
 
