@@ -2,7 +2,7 @@
 
 namespace bees;
 
-require "classes/dbh.class.php";
+require_once "classes/dbh.class.php";
 
 // interface iBees {
 //     public function damage(int $damage);
@@ -19,7 +19,7 @@ class Bees extends \Dbh
     static $resetBees = false;
     public $beeId;
 
-    function __construct(string $role)
+    protected function __construct(string $role)
     {
         self::$totalBees++;
         $this->role = ucFirst($role);        
@@ -88,10 +88,6 @@ class Bees extends \Dbh
         $this->connect()->query("INSERT INTO bee SET BeeRole='$this->role', BeeHealth=100, BeeStatus='$this->status'");
     }
 
-    private function updateBee()
-    {
-        $this->connect()->query("UPDATE bees SET BeeRole='$this->role', BeeHealth='$this->health', BeeStatus='$this->status' WHERE BeeID='$this->beeId'");
-    }
 
     public function damage()
     {
@@ -109,33 +105,5 @@ class Bees extends \Dbh
         }
         $this->connect()->query("UPDATE bees SET BeeHealth='$this->health' WHERE BeeID='$this->beeId'");
         $this->setStatus();
-    }
-
-    static public function createBees(int $queens, int $drones, int $workers)
-    {
-        if ( ($queens < 0 || $queens > 30)
-            || ( $drones < 0 || $drones > 30)
-            || ( $workers < 0 || $workers > 30)
-        ) {
-            throw new \Exception("createBees parameters must be between an integer 0 and 30");
-        }
-
-        $total = $queens + $drones + $workers;
-        for ($i = 1; $i < $total + 1; $i++) {
-
-            //TODO put into ranges
-            if ($i < $queens + 1) {
-                $bees[$i] = new Bees("Queen");
-                continue;
-            }
-            if ($i < $queens + $drones + 1) {
-                $bees[$i] = new Bees("Drone");
-                continue;
-            }
-            if ($i < $queens + $drones + $workers + 1) {
-                $bees[$i] = new Bees("Worker");
-            }
-        }
-        return $bees;
     }
 }
