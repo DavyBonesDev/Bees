@@ -4,11 +4,6 @@ namespace bees;
 
 require_once "classes/dbh.class.php";
 
-// interface iBees {
-//     public function damage(int $damage);
-//     public function setRole(string $beeRole);
-// }
-
 class Bees extends \Dbh
 {
 
@@ -67,7 +62,11 @@ class Bees extends \Dbh
         $conn = $this->connect();
         
         $dbh = $conn->query("SELECT * FROM bees WHERE BeeID=$this->beeId");
-
+        // if($dbh == false)
+        // {
+        //     $this->connect()->query("INSERT INTO bees SET BeeRole='$this->role', BeeHealth=100, BeeStatus='$this->status'");
+        //     $dbh = $conn->query("SELECT * FROM bees WHERE BeeID=$this->beeId");
+        // }
         if($beeData = $dbh->fetch())
         {            
             $this->role = $beeData["BeeRole"];
@@ -85,7 +84,7 @@ class Bees extends \Dbh
             $this->connect()->query("UPDATE bees SET BeeRole='$this->role', BeeHealth=$this->health, BeeStatus='$this->status' WHERE BeeID='$this->beeId'");
             return;
         }
-        $this->connect()->query("INSERT INTO bee SET BeeRole='$this->role', BeeHealth=100, BeeStatus='$this->status'");
+        $this->connect()->query("INSERT INTO bees SET BeeRole='$this->role', BeeHealth=100, BeeStatus='$this->status'");
     }
 
 
@@ -95,7 +94,7 @@ class Bees extends \Dbh
         //     throw new \Exception("Damage must be between 1 and 80");
         // }
         if($this->status == "Dead") {
-            return;
+            return $this;
         }
 
         $damage = rand(1, 80);
@@ -105,5 +104,7 @@ class Bees extends \Dbh
         }
         $this->connect()->query("UPDATE bees SET BeeHealth='$this->health' WHERE BeeID='$this->beeId'");
         $this->setStatus();
+
+        return $this;
     }
 }
