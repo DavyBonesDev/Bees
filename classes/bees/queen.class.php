@@ -5,7 +5,7 @@ namespace bees;
 require_once "classes/bees/bees.class.php";
 require_once "classes/bees/iBees.class.php";
 
-class Queen extends Bees implements iBees
+class Queen extends Bees
 {
     
     function __construct()
@@ -17,8 +17,9 @@ class Queen extends Bees implements iBees
     {
         if($this->health < 20) {
             $this->status = "Dead";
-            return;
+            return $this;
         }
         $this->status = "Alive";
+        return $this;
     }
 }

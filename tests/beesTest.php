@@ -17,7 +17,7 @@ class BeesTest extends TestCase
      */
     public function unitTestReturnsHelloWorld()
     {
-        $bee = new Bees("Queen");
+        $bee = new Queen();
 
         $expected = 'Hello World';
 
@@ -27,15 +27,56 @@ class BeesTest extends TestCase
     /**
      * @test
      */
+    public function resetBeeGives100Health()
+    {
+        $queen = new Queen();
+        $drone = new Drone();
+        $worker = new Worker();
+
+        $this->assertEquals(100, $queen->resetBee()->health);
+        $this->assertEquals(100, $drone->resetBee()->health);
+        $this->assertEquals(100, $worker->resetBee()->health);
+    }
+
+    /**
+     * @test
+     * @depends resetBeeGives100Health
+     */
     public function damageLowersHp()
     {
         $queen = new Queen();
         $drone = new Drone();
         $worker = new Worker();
 
-        $this->assertLessThan($queen->health, $queen->damage()->health);
-        $this->assertLessThan($drone->health, $drone->damage()->health);
-        $this->assertLessThan($worker->health, $worker->damage()->health);
+        $this->assertLessThan($queen->resetBee()->health, $queen->damage()->health);
+        $this->assertLessThan($drone->resetBee()->health, $drone->damage()->health);
+        $this->assertLessThan($worker->resetBee()->health, $worker->damage()->health);
+    }
+
+    /**
+     * @test
+     */
+    public function damageDoesNotLowerHpIfBelowThreshold()
+    {
+        $queen = new Queen();
+        $drone = new Drone();
+        $worker = new Worker();
+
+        $queen->health = 19;
+        $drone->health = 49;
+        $worker->health = 69;
+
+        $this->assertEquals(19, $queen->damage()->health);
+        $this->assertEquals(49, $drone->damage()->health);
+        $this->assertEquals(69, $worker->damage()->health);
+
+        $queen->health = 20;
+        $drone->health = 50;
+        $worker->health = 70;
+
+        $this->assertLessThan(20, $queen->damage()->health);
+        $this->assertLessThan(50, $drone->damage()->health);
+        $this->assertLessThan(70, $worker->damage()->health);
     }
 
     // /**

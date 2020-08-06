@@ -4,7 +4,7 @@ namespace bees;
 
 require_once "classes/dbh.class.php";
 
-class Bees extends \Dbh
+abstract class Bees extends \Dbh
 {
 
     public $health;
@@ -19,36 +19,43 @@ class Bees extends \Dbh
         self::$totalBees++;
         $this->role = ucFirst($role);        
                 
-        self::$resetBees ? $this->resetBee() : $this->getBee();       
-        $this->setStatus();
+        if(self::$resetBees) {
+            $this->resetBee();
+        } elseif(!$this->getBee()) {
+            $this->resetBee();
+        }
+        // $this->setStatus();
     }
 
-    private function setStatus()
-    {
+    abstract protected function setStatus();
 
-        switch($this->role)
-        {
-            case "Queen":
-                if($this->health < 20) {
-                    $this->status = "Dead";
-                    return;
-                }
-            break;
-            case "Drone":
-                if($this->health < 50) {
-                    $this->status = "Dead";
-                    return;
-                }
-            break;
-            case "Worker":
-                if($this->health < 70) {
-                    $this->status = "Dead";
-                    return;
-                }
-            break;
-        }        
-        $this->status = "Alive";        
-    }
+    // private function setStatus()
+    // {
+
+    //     switch($this->role)
+    //     {
+    //         case "Queen":
+    //             if($this->health < 20) {
+    //                 $this->status = "Dead";
+    //                 return $this;
+    //             }
+    //         break;
+    //         case "Drone":
+    //             if($this->health < 50) {
+    //                 $this->status = "Dead";
+    //                 return $this;
+    //             }
+    //         break;
+    //         case "Worker":
+    //             if($this->health < 70) {
+    //                 $this->status = "Dead";
+    //                 return $this;
+    //             }
+    //         break;
+    //     }        
+    //     $this->status = "Alive";
+    //     return $this;        
+    // }
 
     public function unitTest()
     {
@@ -62,38 +69,35 @@ class Bees extends \Dbh
         $conn = $this->connect();
         
         $dbh = $conn->query("SELECT * FROM bees WHERE BeeID=$this->beeId");
-        // if($dbh == false)
-        // {
-        //     $this->connect()->query("INSERT INTO bees SET BeeRole='$this->role', BeeHealth=100, BeeStatus='$this->status'");
-        //     $dbh = $conn->query("SELECT * FROM bees WHERE BeeID=$this->beeId");
-        // }
+
         if($beeData = $dbh->fetch())
-        {            
+        {                        
             $this->role = $beeData["BeeRole"];
             $this->health = intval($beeData["BeeHealth"]);
             $this->status = $beeData["BeeStatus"];            
             return true;
-        }
+        }        
         return false;
     }
 
-    private function resetBee()
+    public function resetBee()
     {                
         if($this->getBee()) {            
             $this->health = 100;
-            $this->connect()->query("UPDATE bees SET BeeRole='$this->role', BeeHealth=$this->health, BeeStatus='$this->status' WHERE BeeID='$this->beeId'");
-            return;
+            $this->connect()->query("UPDATE bees SET BeeRole='$this->role', BeeHealth=$this->health, BeeStatus='Alive' WHERE BeeID='$this->beeId'");
+            return $this->setStatus();
         }
-        $this->connect()->query("INSERT INTO bees SET BeeRole='$this->role', BeeHealth=100, BeeStatus='$this->status'");
+        $this->connect()->query("INSERT INTO bees SET BeeRole='$this->role', BeeHealth=100, BeeStatus='Alive'");
+        return $this->setStatus();
     }
 
 
     public function damage()
     {
-        // if ($damage < 1 || $damage > 80) {
-        //     throw new \Exception("Damage must be between 1 and 80");
-        // }
+        $this->setStatus();
+        
         if($this->status == "Dead") {
+            
             return $this;
         }
 
@@ -102,8 +106,10 @@ class Bees extends \Dbh
         if($this->health < 0) {
             $this->health = 0;
         }
-        $this->connect()->query("UPDATE bees SET BeeHealth='$this->health' WHERE BeeID='$this->beeId'");
+       
+        // throw new \exception($this->status);
         $this->setStatus();
+        $this->connect()->query("UPDATE bees SET BeeHealth='$this->health', BeeStatus='$this->status' WHERE BeeID='$this->beeId'");
 
         return $this;
     }
