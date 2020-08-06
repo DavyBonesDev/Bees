@@ -22,11 +22,11 @@ abstract class Bees extends \Dbh
         if(self::$resetBees) {
             $this->resetBee();
         } else {
-            // if(!$this->getBee()) {
-            //     $this->resetBee();
-            //     echo($this->beeId);
-            // }
-            $this->getBee();
+            if(!$this->getBee())
+            {
+                //Should go here to initialise bee if there is no bee data in the table.
+                $this->resetBee();
+            }
         }        
     }
 
