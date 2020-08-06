@@ -8,7 +8,6 @@ require_once "classes/bees/drone.class.php";
 require_once "classes/bees/worker.class.php";
 // use bees\Bees;
 
-
 if(isset($_POST["resetBees"]) && $_POST["resetBees"] == 1) {  
   Bees::$resetBees = true;
 }
@@ -50,9 +49,9 @@ function createBees(int $queens, int $drones, int $workers)
 
 $bees = createBees(10, 10, 10);
 // echo "Total Bees: " . Bees::$totalBees;
-foreach($bees as $bee) {
-    print_r(get_object_vars($bee));
-}
+// foreach($bees as $bee) {
+//     print_r(get_object_vars($bee));
+// }
 
 if(isset($damage))
 {    

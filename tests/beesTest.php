@@ -11,18 +11,7 @@ use bees\Worker;
 use PHPUnit\Framework\TestCase;
 
 class BeesTest extends TestCase
-{
-    /**
-     * @test
-     */
-    public function unitTestReturnsHelloWorld()
-    {
-        $bee = new Queen();
-
-        $expected = 'Hello World';
-
-        $this->assertEquals($expected, $bee->unitTest());
-    }
+{   
 
     /**
      * @test
