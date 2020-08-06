@@ -87,7 +87,9 @@ abstract class Bees extends \Dbh
             $this->connect()->query("UPDATE bees SET BeeRole='$this->role', BeeHealth=$this->health, BeeStatus='Alive' WHERE BeeID='$this->beeId'");
             return $this->setStatus();
         }
-        $this->connect()->query("INSERT INTO bees SET BeeRole='$this->role', BeeHealth=100, BeeStatus='Alive'");
+        $this->health = 100;
+        $this->status = 'Alive';
+        $this->connect()->query("INSERT INTO bees SET BeeRole='$this->role', BeeHealth=$this->health, BeeStatus='$this->status'");
         return $this->setStatus();
     }
 
